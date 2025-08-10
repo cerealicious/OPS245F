@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPS 245 Practice Test</title>
+    <!-- Use a simple, readable font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .correct-answer-box {
+            background-color: #e0f2fe; /* Light blue */
+            border-left: 4px solid #0ea5e9; /* Blue border */
+        }
+        .correct-answer-text {
+            color: #0ea5e9;
+        }
+        .incorrect-answer-text {
+            color: #ef4444;
+        }
+        .correct-short-answer {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .incorrect-short-answer {
+            color: #ef4444;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-2">OPS 245 Finals Practice Test</h1>
+       <p>Provide the answer to the prompts as accurately as possible. <br>Do not use sudo for any commands.</p>
+
+        <!-- Loading state for when the page is loading or generating content -->
+        <div id="loading" class="text-center text-gray-500 hidden">
+            <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-2">Loading questions...</p>
+        </div>
+
+        <div id="quiz-container">
+            <!-- Questions will be dynamically added here by JavaScript -->
+        </div>
+
+        <div id="pagination" class="flex justify-center items-center space-x-4 mt-8">
+            <!-- Pagination buttons will be added here -->
+        </div>
+
+        <div id="message-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
+                <p id="message-text" class="text-lg font-semibold text-gray-800"></p>
+                <button id="close-message" class="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition-colors">OK</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Data set with questions, answers, and explanations
+        const allQuestions = [
+            {
+                question: 'You just created a new partition called "sda5". Provide a command that will create a physical volume using the new partition.',
+                answer: 'pvcreate /dev/sda5',
+                isLongAnswer: false,
+                explanation: 'The `pvcreate` command is used to initialize a block device or loop file to be used as a physical volume for LVM.'
+            },
+            {
+                question: 'You have a volume group called "CAT_data" which has 15Gb of free space. Provide a command that will use the 10Gb of that free space to create a logical volume called "ctln".',
+                answer: 'lvcreate -n ctln -L 10G CAT_data',
+                isLongAnswer: false,
+                explanation: 'use lvcreate to create a logical volume\n-n: name of logical volume\n-L 10G: size (10 gigabytes)\nCAT_data: volume group name'
+            },
+            {
+                question: 'You have a volume group called "seals" which contains a logical volume called "reds". Provide a command that will reduce the size of the "reds" logical volume by 5Gb.',
+                answer: 'lvreduce -L -5G /dev/seals/reds',
+                isLongAnswer: false,
+                explanation: '-L -5G means reduce by 5GB'
+            },
+            {
+                question: 'You have a volume group called "Seneca". A new physical volume called "vdb3" has just been created. Provide the command that will add the new physical volume to your volume group.',
+                answer: 'vgextend Seneca /dev/vdb3',
+                isLongAnswer: false,
+                explanation: 'The `vgextend` command is used to add one or more physical volumes to an LVM volume group.'
+            },
+            {
+                question: 'You have a logical volume called "OPS245" which is using the ext4 file system. This logical volume is part of the "ITAS" volume group. Provide a command that will mount this logical volume to the /usr/OPS245 directory.',
+                answer: 'mount /dev/ITAS/OPS245 /usr/OPS245',
+                isLongAnswer: false,
+                explanation: 'The `mount` command is used to attach a filesystem to a specific directory in the file hierarchy.'
+            },
+            {
+                question: 'You have just added the new statically configured host called "debserver" to the network. Its IP Address is 192.168.245.55. "debserver" is not registered with DNS. What steps would you take on your other hosts so that they could communicate with "debserver" by its name instead of IP address?',
+                answer: 'nano /etc/hosts\nAdd the line: 192.168.245.55 debserver',
+                isLongAnswer: true,
+                explanation: 'By adding an entry to the `/etc/hosts` file on each host, you create a local mapping of the IP address to the hostname, allowing communication by name without DNS.'
+            },
+            {
+                question: 'What command will display the cached MAC Address on your system?',
+                answer: 'arp -a',
+                isLongAnswer: false,
+                explanation: 'The `arp` command is used to view and manipulate the ARP cache, which stores IP-to-MAC address mappings.'
+            },
+            {
+                question: 'Write a command that will list the active TCP Ports on your hosts. Display the port numbers instead of service names.',
+                answer: 'ss -atun',
+                isLongAnswer: false,
+                explanation: '-a: all (listening and established)\n-t: TCP\n-u: UDP\n-n: numeric (don’t resolve service names)'
+            },
+            {
+                question: 'You just added a new, xfs formatted, Logical Volume Group called "sealsvg". The Logical Volume name is "its_vol2". What steps would you take to create a mount point called "/itasdb" and have "its_vol2" automatically mounted on "/itasdb" at boot time? Make sure to include any commands used, files modified and config file changes.',
+                answer: 'nano /etc/fstab\nadd\n/dev/sealsvg/its_vol2 /itasdb defaults 1 2',
+                isLongAnswer: true,
+                explanation: 'The `/etc/fstab` file is used to define which filesystems should be mounted automatically at system startup.'
+            },
+            {
+                question: 'What steps would you take to schedule the /usr/local/bin/sysmon.bash script to execute at 5AM every Thursday Morning? Make sure to include any commands used, files used, and config changes made.',
+                answer: 'crontab -e\nadd\n0 5 * * 4 /usr/local/bin/sysmon.bash',
+                isLongAnswer: true,
+                explanation: 'The `crontab -e` command opens the crontab file for editing, where you can schedule recurring tasks. The format is: minute hour day-of-month month day-of-week command.'
+            },
+            {
+                question: 'You are in your debhost. What is the command to use SSH tunnelling to run gedit application from the deb1 VM, but have the application display in your debhost.',
+                answer: 'ssh -X -C user@debhost gedit',
+                isLongAnswer: false,
+                explanation: '-X allows Xwindows tunnelling\n-C mean compression from better viewing'
+            },
+            {
+                question: 'Write a command to confirm that apache2 service is currently running.',
+                answer: 'systemctl status apache2',
+                isLongAnswer: false,
+                explanation: '`systemctl status` is used to check the status of a service managed by systemd.'
+            },
+            {
+                question: 'Write firewall rule that will accept all incoming tcp connections from port 22.',
+                answer: 'iptables -I INPUT -p tcp --dport 22 -j ACCEPT',
+                isLongAnswer: false,
+                explanation: '-I INPUT: insert rule into INPUT chain\n-p tcp: TCP protocol\n--dport 22: destination port 22 (SSH)\n-j ACCEPT: allow the packet'
+            },
+            {
+                question: 'Write a firewall rule to set the default policy to drop all incoming connections to your system.',
+                answer: 'iptables -P INPUT DROP',
+                isLongAnswer: false,
+                explanation: '`-P` sets the default policy for a chain. In this case, it sets the INPUT chain policy to DROP, meaning all packets that don\'t match another rule will be dropped.'
+            },
+            {
+                question: 'Give two answers that will make sshd more secure.',
+                answer: 'Disable root login over SSH:\nEdit /etc/ssh/sshd_config, set “PermitRootLogin no”\nEdit the file /etc/ssh/sshd_config and add new option of "AllowGroups sudo"',
+                isLongAnswer: true,
+                explanation: 'Disabling root login prevents direct brute-force attacks on the root account. Limiting access to a specific group ensures only authorized users can log in via SSH.'
+            },
+            {
+                question: 'What file on the DHCP server contains a record of leased addresses?',
+                answer: '/var/lib/dhcp/dhcpd.leases',
+                isLongAnswer: false,
+                explanation: 'The `dhcpd.leases` file stores the lease information for clients that have received an IP address from the DHCP server.'
+            }
+        ];
+
+        const questionsPerPage = 5;
+        let currentPage = 0;
+        let shuffledQuestions = [];
+
+        // Helper function to show a custom message box instead of alert()
+        function showMessage(text) {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = text;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Helper function to shuffle an array
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Function to render questions for the current page
+        function renderQuestions() {
+            const quizContainer = document.getElementById('quiz-container');
+            const paginationContainer = document.getElementById('pagination');
+            quizContainer.innerHTML = '';
+            paginationContainer.innerHTML = '';
+
+            const startIndex = currentPage * questionsPerPage;
+            const endIndex = startIndex + questionsPerPage;
+            const questionsToShow = shuffledQuestions.slice(startIndex, endIndex);
+
+            questionsToShow.forEach((q, index) => {
+                const questionIndex = startIndex + index;
+                const isLongAnswer = q.isLongAnswer;
+                
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-md', 'mb-6');
+                questionElement.innerHTML = `
+                    <p class="text-lg font-semibold text-gray-700 mb-4">${questionIndex + 1}. ${q.question}</p>
+                    ${isLongAnswer ? 
+                        `<textarea id="answer-${questionIndex}" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here..." style="resize:vertical;"></textarea>` :
+                        `<input type="text" id="answer-${questionIndex}" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here...">`
+                    }
+                    <div id="results-${questionIndex}" class="mt-4 hidden">
+                        <!-- Results will be displayed here -->
+                    </div>
+                `;
+                quizContainer.appendChild(questionElement);
+            });
+
+            // Add the "Check My Answers" button
+            const checkButton = document.createElement('button');
+            checkButton.id = 'check-answers-btn';
+            checkButton.textContent = 'Check My Answers';
+            checkButton.classList.add('w-full', 'py-3', 'bg-blue-600', 'text-white', 'font-bold', 'rounded-lg', 'shadow-lg', 'hover:bg-blue-700', 'transition-colors', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+            quizContainer.appendChild(checkButton);
+
+            // Add pagination buttons
+            const totalPages = Math.ceil(allQuestions.length / questionsPerPage);
+            for (let i = 0; i < totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i + 1;
+                pageButton.classList.add('w-10', 'h-10', 'rounded-full', 'font-semibold', 'transition-colors', 'focus:outline-none');
+                if (i === currentPage) {
+                    pageButton.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    pageButton.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderQuestions();
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+        }
+
+        // Function to check answers and display results
+        function checkAnswers() {
+            const startIndex = currentPage * questionsPerPage;
+            const endIndex = startIndex + questionsPerPage;
+            const questionsToCheck = shuffledQuestions.slice(startIndex, endIndex);
+
+            questionsToCheck.forEach((q, index) => {
+                const questionIndex = startIndex + index;
+                const userInput = document.getElementById(`answer-${questionIndex}`).value.trim();
+                const resultsContainer = document.getElementById(`results-${questionIndex}`);
+                
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.remove('hidden');
+
+                const isCorrect = q.isLongAnswer ? false : (userInput.toLowerCase() === q.answer.toLowerCase().trim());
+                
+                // Display user's result for short answers
+                if (!q.isLongAnswer) {
+                    const resultText = document.createElement('p');
+                    resultText.classList.add('font-semibold', 'mb-2');
+                    resultText.textContent = `Your Answer: ${isCorrect ? 'Correct!' : 'Incorrect'}`;
+                    resultText.classList.add(isCorrect ? 'correct-short-answer' : 'incorrect-short-answer');
+                    resultsContainer.appendChild(resultText);
+                } else {
+                    const longAnswerNote = document.createElement('p');
+                    longAnswerNote.classList.add('text-sm', 'text-gray-500', 'mb-2', 'italic');
+                    longAnswerNote.textContent = 'This is a long answer question. The provided answer and explanation are for reference.';
+                    resultsContainer.appendChild(longAnswerNote);
+                }
+
+                // Display correct answer and explanation
+                const answerBox = document.createElement('div');
+                answerBox.classList.add('correct-answer-box', 'p-4', 'rounded-lg', 'mt-2', 'shadow');
+                answerBox.innerHTML = `
+                    <p class="font-bold correct-answer-text mb-1">Correct Answer:</p>
+                    <pre class="whitespace-pre-wrap text-sm text-gray-700">${q.answer}</pre>
+                    <p class="font-bold correct-answer-text mt-3 mb-1">Explanation:</p>
+                    <pre class="whitespace-pre-wrap text-sm text-gray-700">${q.explanation}</pre>
+                `;
+                resultsContainer.appendChild(answerBox);
+            });
+        }
+
+        // Main logic to run on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Shuffle questions and render the first page
+            shuffledQuestions = shuffle(allQuestions);
+            renderQuestions();
+
+            // Event listener for the "Check My Answers" button
+            document.getElementById('quiz-container').addEventListener('click', (e) => {
+                if (e.target && e.target.id === 'check-answers-btn') {
+                    checkAnswers();
+                }
+            });
+
+            // Event listener for closing the custom message box
+            document.getElementById('close-message').addEventListener('click', () => {
+                document.getElementById('message-box').classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
