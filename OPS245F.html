@@ -38,8 +38,8 @@
 <body class="p-4 sm:p-8">
 
     <div class="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-2xl">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-2">OPS 245 Finals Practice Test</h1>
-       <p>Provide the answer to the prompts as accurately as possible. <br>Do not use sudo for any commands.</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center mb-2">OPS 245 Practice Test</h1>
+        <p class="text-center text-gray-500 mb-8 text-sm sm:text-base">Provide the answer to the prompts as accurately as possible. <br><strong>Do not use sudo for any commands.</strong></p>
 
         <!-- Loading state for when the page is loading or generating content -->
         <div id="loading" class="text-center text-gray-500 hidden">
@@ -47,7 +47,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="mt-2">Loading questions...</p>
+            <p class="mt-2 text-sm">Loading questions...</p>
         </div>
 
         <div id="quiz-container">
@@ -143,7 +143,7 @@
                 explanation: '`systemctl status` is used to check the status of a service managed by systemd.'
             },
             {
-                question: 'Write firewall rule that will accept all incoming tcp connections from port 22.',
+                question: 'Write a firewall rule that will accept all incoming tcp connections from port 22.',
                 answer: 'iptables -I INPUT -p tcp --dport 22 -j ACCEPT',
                 isLongAnswer: false,
                 explanation: '-I INPUT: insert rule into INPUT chain\n-p tcp: TCP protocol\n--dport 22: destination port 22 (SSH)\n-j ACCEPT: allow the packet'
@@ -165,6 +165,102 @@
                 answer: '/var/lib/dhcp/dhcpd.leases',
                 isLongAnswer: false,
                 explanation: 'The `dhcpd.leases` file stores the lease information for clients that have received an IP address from the DHCP server.'
+            },
+            {
+                question: 'Write a firewall rule into the INPUT chain that will allow incoming SSH traffic from 192.168.245.55.',
+                answer: 'iptables -I INPUT -p tcp -s 192.168.245.55 --dport 22 -j ACCEPT',
+                isLongAnswer: false,
+                explanation: '-I INPUT: insert rule at the top of INPUT chain\n-p tcp: TCP protocol\n--dport 22: SSH port\n-j ACCEPT: allow the traffic'
+            },
+            {
+                question: 'Provide the command that will create an xml file for a virtual machine called sealOS in the /home/seals/ directory.',
+                answer: 'virsh dumpxml sealOS > /home/seals/sealOS.xml',
+                isLongAnswer: false,
+                explanation: 'The virsh dumpxml command dumps the XML configuration for a domain.'
+            },
+            {
+                question: 'Write a single command that will make the machine immediately switch to a graphical interface. (Assume that necessary packages were already installed).',
+                answer: 'systemctl isolate graphical.target',
+                isLongAnswer: false,
+                explanation: 'systemctl isolate switches to a specified unit.'
+            },
+            {
+                question: 'Write a single command that will create a backup of all files in /tmp directory. Name the archive temp_backup, and give it the proper extension.',
+                answer: 'tar -czf /tmp/temp_backup.tar.gz /tmp',
+                isLongAnswer: false,
+                explanation: '-c: create archive\n-z: compress with gzip\n-f: filename\nCreates temp_backup.tar.gz'
+            },
+            {
+                question: 'Assume that deb3 VM has been corrupted. Describe and explain the steps you must take to restore the backup of your deb3.',
+                answer: '1. Remove the corrupted VM definition XML file.\nvirsh undefine deb3\n2. Restore the disk image from backup\ngunzip < /home/crlseals/VM_backups/deb3.qcow2.gz > /var/lib/libvirt/images/deb3.qcow2\n\n3. Restore the VM configuration XML file\nvirsh define /home/crlseals/VM_backups/deb3.xml\n\n4. Start the newly restored VM\nvirsh start deb3\n\n5. Check if VM is running properly.\nvirsh list –all',
+                isLongAnswer: true,
+                explanation: 'This process involves removing the old VM definition, restoring the disk and XML from backups, and then redefining and starting the VM.'
+            },
+            {
+                question: 'Provide the command that will ensure the "gdm" system service does not start when the system boots up.',
+                answer: 'systemctl disable gdm',
+                isLongAnswer: false,
+                explanation: 'The systemctl disable command is used to prevent a service from starting automatically at boot.'
+            },
+            {
+                question: 'Write a single command that will add comment "Ceril Seals" to the pre-existing user "crlseals", add them to a supplementary group "senecaseals", with an account expiring on August 13, 2025.',
+                answer: 'usermod -c "Ceril Seals" -G senecaseals -e 2025-08-13 crlseals',
+                isLongAnswer: false,
+                explanation: '-c: full name/comment\n-G: supplementary group\n-e: account expiration date (YYYY-MM-DD)'
+            },
+            {
+                question: 'Write a firewall rule that will append an IPTABLES rule into the INPUT chain that will reject incoming SSH traffic from 192.168.245.55.',
+                answer: 'iptables -A INPUT -p tcp -s 192.168.245.55 --dport 22 -j REJECT',
+                isLongAnswer: false,
+                explanation: '-A INPUT: append to INPUT chain\n-j REJECT: actively reject the connection'
+            },
+            {
+                question: 'Provide the command that will temporarily assign 192.168.117.7 as the default gateway for a NIC called "enp1s0" on your system.',
+                answer: 'ip route add default via 192.168.117.7 dev enp1s0',
+                isLongAnswer: false,
+                explanation: 'ip route add is used to add new routes to the routing table.'
+            },
+            {
+                question: 'Write a single command that will launch an X windows tunnel to debhost with the user crlseals.',
+                answer: 'ssh -X -C crlseals@debhost gedit',
+                isLongAnswer: false,
+                explanation: '-X: enables X11 forwarding\n-C: enables compression'
+            },
+            {
+                question: 'Write a crontab entry that will run /home/crl/seal.bash every Wednesday at 7:00 PM.',
+                answer: '0 19 * * 3 /home/crl/seal.bash',
+                isLongAnswer: false,
+                explanation: '0 19 = 7:00 PM\n3 = Wednesday (0=Sunday)'
+            },
+            {
+                question: 'Using gzip, create a backup of /home/user/numbers.txt and store it in the /tmp/databackup/ directory. Give your backup an appropriate extension.',
+                answer: 'gzip -c /home/user/numbers.txt > /tmp/databackup/numbers.txt.gz',
+                isLongAnswer: false,
+                explanation: '-c: output compressed data to stdout\n>: Redirects output to target directory with .gz extension'
+            },
+            {
+                question: 'You have a virtual machine called deb5. It\'s image is located at /var/lib/libvirt/images/deb5.qcow2. Provide one command that will backup this image using gzip and store the backup in /home/crlseals/VM_backups/. Use absolute paths for all parts of the command.',
+                answer: 'gzip -c /var/lib/libvirt/images/deb5.qcow2 > /home/crlseals/VM_backups/deb5.qcow2.gz',
+                isLongAnswer: false,
+                explanation: 'gzip -c compresses the file and outputs to stdout. The > operator redirects the output to the specified backup file.'
+            },
+            {
+                question: 'Write a single command that will save the XML data of your deb7VM in the /home/crlseals/VM_backups/ directory.',
+                answer: 'virsh dumpxml deb7VM > /home/crlseals/VM_backups/deb7VM.xml',
+                isLongAnswer: false,
+                explanation: 'virsh dumpxml is used to save a domain\'s XML configuration.'
+            },
+            {
+                question: 'Typed a fix host declaration and subnet for the dhcpd.conf file:\nHostname: crl-ubuntu\nIP address: 192.168.245.7\nMAC Address: 01:55:DC:00:A7:7E\n\nNetwork ID: 192.168.245.1\nSubnet Mask: 255.255.255.0\nRange: 192.168.245.15 to 192.168.245.30\nDefault Gateway: 192.168.200.1\nDefault Lease Time: 30 minutes\nMax Lease Time: 2 Hours',
+                answer: 'subnet 192.168.245.0 netmask 255.255.255.0 {\n    range 192.168.245.15 192.168.245.30;\n    option routers 192.168.200.1;\n    option domain-name-servers 8.8.8.8;\n    default-lease-time 1800;\n    max-lease-time 7200;\n}\n\nhost crl-ubuntu {\n    hardware ethernet 01:55:DC:00:A7:7E;\n    fixed-address 192.168.245.7;\n}',
+                isLongAnswer: true,
+                explanation: 'This is a correctly formatted DHCP configuration snippet.'
+            },
+            {
+                question: 'Write a short BASH script that will ask the user to enter either "cat" or "dog":\n• If the user enters "cat", the script will echo with "meow."\n• If the user enters "dog", the script will echo with "woof."\n• If the user enters anything else, the script will respond with "Invalid input. Please enter either cat or dog"',
+                answer: '#!/bin/bash\necho -n "Enter \'cat\' or \'dog\': "\nread choice\n\nif [ "$choice" = "cat" ]; then\n    echo "meow."\nelif [ "$choice" = "dog" ]; then\n    echo "woof."\nelse\n    echo "Invalid input. Please enter either cat or dog"\nfi',
+                isLongAnswer: true,
+                explanation: 'This script uses an if/elif/else block to check the user\'s input and print the appropriate response. The `-n` flag on `echo` prevents a newline, keeping the prompt and input on the same line.'
             }
         ];
 
@@ -206,14 +302,15 @@
             questionsToShow.forEach((q, index) => {
                 const questionIndex = startIndex + index;
                 const isLongAnswer = q.isLongAnswer;
+                const formattedQuestion = q.question.replace(/\n/g, '<br>');
                 
                 const questionElement = document.createElement('div');
                 questionElement.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-md', 'mb-6');
                 questionElement.innerHTML = `
-                    <p class="text-lg font-semibold text-gray-700 mb-4">${questionIndex + 1}. ${q.question}</p>
+                    <p class="text-base font-semibold text-gray-700 mb-4">${questionIndex + 1}. ${formattedQuestion}</p>
                     ${isLongAnswer ? 
-                        `<textarea id="answer-${questionIndex}" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here..." style="resize:vertical;"></textarea>` :
-                        `<input type="text" id="answer-${questionIndex}" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here...">`
+                        `<textarea id="answer-${questionIndex}" rows="4" class="w-full p-3 border text-sm border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here..." style="resize:vertical;"></textarea>` :
+                        `<input type="text" id="answer-${questionIndex}" class="w-full p-3 border text-sm border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="Type your answer here...">`
                     }
                     <div id="results-${questionIndex}" class="mt-4 hidden">
                         <!-- Results will be displayed here -->
@@ -246,6 +343,9 @@
                 });
                 paginationContainer.appendChild(pageButton);
             }
+            
+            // Automatically scroll to the top of the page when questions are rendered
+            window.scrollTo(0, 0);
         }
 
         // Function to check answers and display results
@@ -279,13 +379,16 @@
                 }
 
                 // Display correct answer and explanation
+                const formattedAnswer = q.answer.replace(/\n/g, '<br>');
+                const formattedExplanation = q.explanation ? q.explanation.replace(/\n/g, '<br>') : '';
+                
                 const answerBox = document.createElement('div');
                 answerBox.classList.add('correct-answer-box', 'p-4', 'rounded-lg', 'mt-2', 'shadow');
                 answerBox.innerHTML = `
                     <p class="font-bold correct-answer-text mb-1">Correct Answer:</p>
-                    <pre class="whitespace-pre-wrap text-sm text-gray-700">${q.answer}</pre>
+                    <div class="text-sm text-gray-700">${formattedAnswer}</div>
                     <p class="font-bold correct-answer-text mt-3 mb-1">Explanation:</p>
-                    <pre class="whitespace-pre-wrap text-sm text-gray-700">${q.explanation}</pre>
+                    <div class="text-sm text-gray-700">${formattedExplanation}</div>
                 `;
                 resultsContainer.appendChild(answerBox);
             });
